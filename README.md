@@ -105,7 +105,7 @@ top of `score_reasoning.py`; extend it if you add models.
   author: Sriram
   category: visual            # visual | reasoning
   image: q2_source.jpeg       # basename under image_dir
-  topic: fsm                  # block_diagram | schematic | fsm | waveform | fpga_arch
+  topic: fsm                  # block_diagram | schematic | fsm | waveform
   source: url_https___www.usenix.org_system_files_sec19-nunes.pdf/fig_002.jpeg   # provenance in the corpus
   answer_type: numerical      # numerical | yes_no | multiple_choice | multiple_choice_multi
   question: |
