@@ -1,0 +1,1899 @@
+# SiliconEye — benchmark question set (100 items).
+#
+# Each question has:
+#   id             — unique short id (used in output files)
+#   author         — first name of the human who authored the question
+#   category       — "visual" (answer is read off the image alone) or
+#                    "reasoning" (image must be combined with hardware
+#                    design knowledge). Ignored by the runner; used when
+#                    analysing which capability a model is missing.
+#   image          — basename under `image_dir` (see benchmark/figure_sources.yaml
+#                    for where each image comes from and how it is regenerated)
+#   topic          — coarse category (block_diagram | fsm | waveform | fpga_arch)
+#   source         — provenance: path of the figure in the released corpus
+#                    (dataset/figures.ndjson `path` column, minus the leading
+#                    "figures/")
+#   answer_type    — "numerical" | "yes_no" | "multiple_choice" | "multiple_choice_multi"
+#   question       — prompt shown to the model (image is attached separately)
+#   correct_answer — int for numerical; "Y"/"N" for yes_no; option key ("A"/"B"/...)
+#                    for multiple_choice; list of keys (e.g. [A, D]) for
+#                    multiple_choice_multi
+#   options        — for MCQ variants only, list of {key, text}
+#
+# The runner appends a single-line answer-format instruction to every prompt
+# based on answer_type — do NOT include that instruction in the question body
+# here. Additional reasoning above/below the final answer is allowed and is
+# ignored by the grader.
+#
+# Each question's `image` field is a basename that is joined against
+# `image_dir` (below) at runtime. Passing `--degraded AXIS/LEVEL` to the
+# runner swaps `image_dir` to `degraded/AXIS/LEVEL` so the same yaml can
+# drive both clean and degraded evaluations.
+
+image_dir: images
+
+questions:
+
+# ────────────────────────────────────────────────────────────────
+# Pranav — five-stage RISC-V processor (Figure 1)
+# ────────────────────────────────────────────────────────────────
+- id: q12a_id_stage_blocks_signals
+  author: Pranav
+  category: visual
+  image: q12_source.jpeg
+  topic: block_diagram
+  source: arxiv_2002.03568/fig_001.jpeg
+  answer_type: multiple_choice
+  question: |
+    Which option lists only the functional/combinational blocks and primary
+    internal signals located entirely within the Instruction Decode (Id) stage?
+  options:
+    - key: A
+      text: "Blocks: decoder_imm, regfile, Load-use, 2:1 multiplexer; Signals: Id_rs1, Id_rs2, Id_rrs1, Id_rrs2, Id_imm, Id_luse, w_stall"
+    - key: B
+      text: "Blocks: decoder_id, regfile, align/extend, 3:1 multiplexer; Signals: IfId_ir, Id_rs1, Id_rs2, IdEx_rd, IdEx_imm, w_stall"
+    - key: C
+      text: "Blocks: decoder_imm, regfile, ALU, 2:1 multiplexer; Signals: Id_rs1, Id_rs2, Id_rrs1, Id_imm, Ex_rrs1, w_bmis"
+    - key: D
+      text: "Blocks: decoder_if, Load-use, regfile, shift-left unit; Signals: If_rs1, If_rs2, Id_rrs2, IdEx_pc, w_stall, w_btkn"
+  correct_answer: A
+
+- id: q12b_align_extend_input
+  author: Pranav
+  category: visual
+  image: q12_source.jpeg
+  topic: block_diagram
+  source: arxiv_2002.03568/fig_001.jpeg
+  answer_type: multiple_choice
+  question: |
+    In the Memory Access (Ma) stage of Figure 1, which signal directly feeds
+    the input of the align/extend combinational block?
+  options:
+    - key: A
+      text: D_ADDR from the Execute-stage address adder
+    - key: B
+      text: D_IN output directly from m_dmem
+    - key: C
+      text: Ex_rslt via the ExMa pipeline register
+    - key: D
+      text: Ex_b_rslt output from the branch comparator
+  correct_answer: B
+
+- id: q12c_pc_plus_four_destinations
+  author: Pranav
+  category: visual
+  image: q12_source.jpeg
+  topic: block_diagram
+  source: arxiv_2002.03568/fig_001.jpeg
+  answer_type: multiple_choice
+  question: |
+    In the If stage, the dedicated r_pc+4 adder output directly feeds which
+    two components?
+  options:
+    - key: A
+      text: m_imem and the IfId register
+    - key: B
+      text: the primary Next-PC multiplexer and m_BTB
+    - key: C
+      text: the primary Next-PC multiplexer and the IfId register
+    - key: D
+      text: comb and the primary Next-PC multiplexer
+  correct_answer: C
+
+- id: q12d_pht_xor_inputs
+  author: Pranav
+  category: visual
+  image: q12_source.jpeg
+  topic: block_diagram
+  source: arxiv_2002.03568/fig_001.jpeg
+  answer_type: multiple_choice
+  question: |
+    In the If-stage branch-prediction loop, which two signals feed the XOR
+    block immediately before the m_PHT input?
+  options:
+    - key: A
+      text: r_pc and r_BHR
+    - key: B
+      text: m_BTB and join
+    - key: C
+      text: the r_pc+4 adder and comb
+    - key: D
+      text: r_BHR and the primary Next-PC multiplexer
+  correct_answer: A
+
+# ────────────────────────────────────────────────────────────────
+# Pranav — ADS7924 multiple-register read timing (Figure 33)
+# ────────────────────────────────────────────────────────────────
+- id: q13a_ads7924_data_driven_frames
+  author: Pranav
+  category: visual
+  image: q13_source.jpeg
+  topic: waveform
+  source: url_http___www.ti.com_lit_ds_symlink_ads7924.pdf/fig_017.jpeg
+  answer_type: multiple_choice
+  question: |
+    At the repeated Start between the end of Frame 2 and the beginning of
+    Frame 3, which waveform sequence is shown?
+  options:
+    - key: A
+      text: SCL is held low while SDA transitions high-to-low, followed immediately by SCL transitioning high.
+    - key: B
+      text: SCL transitions low-to-high; while SCL remains high, SDA transitions from high-to-low.
+    - key: C
+      text: SDA transitions low-to-high, SCL transitions low-to-high, then SDA transitions high-to-low while SCL remains high.
+    - key: D
+      text: Both SCL and SDA transition low-to-high simultaneously, then SDA drops.
+  correct_answer: A
+
+- id: q13b_event_before_frame5
+  author: Pranav
+  category: visual
+  image: q13_source.jpeg
+  topic: waveform
+  source: url_http___www.ti.com_lit_ds_symlink_ads7924.pdf/fig_017.jpeg
+  answer_type: multiple_choice
+  question: |
+    What values label the first clock pulse in Frame 1, Frame 2, and Frame 3,
+    respectively?
+  options:
+    - key: A
+      text: "Frame 1: '1', Frame 2: '1(2)', Frame 3: '1'"
+    - key: B
+      text: "Frame 1: Start, Frame 2: P4, Frame 3: D7"
+    - key: C
+      text: "Frame 1: '0', Frame 2: '1', Frame 3: '0'"
+    - key: D
+      text: "Frame 1: '1', Frame 2: '0', Frame 3: '1'"
+  correct_answer: A
+
+- id: q13c_clock_pulses_per_frame
+  author: Pranav
+  category: visual
+  image: q13_source.jpeg
+  topic: waveform
+  source: url_http___www.ti.com_lit_ds_symlink_ads7924.pdf/fig_017.jpeg
+  answer_type: numerical
+  question: |
+    How many clock pulses are depicted in each individual frame of the timing diagram?
+  correct_answer: 9
+
+- id: q13d_pointer_address_bits
+  author: Pranav
+  category: visual
+  image: q13_source.jpeg
+  topic: waveform
+  source: url_http___www.ti.com_lit_ds_symlink_ads7924.pdf/fig_017.jpeg
+  answer_type: multiple_choice
+  question: |
+    Which option correctly identifies the Pointer Address bits in Frame 2 and
+    states what determines their target register?
+  options:
+    - key: A
+      text: Bits P4 through P0; Note 3 says they point to the register to be read.
+    - key: B
+      text: Bits D7 through D0; Note 2 says they select the next data byte.
+    - key: C
+      text: Bits A7 through A0; Note 1 says they are determined by the A0 pin.
+    - key: D
+      text: Bits R/W and INC; Note 3 says they select the read direction.
+  correct_answer: A
+
+- id: q13e_ads7924_driven_pulses
+  author: Pranav
+  category: visual
+  image: q13_source.jpeg
+  topic: waveform
+  source: url_http___www.ti.com_lit_ds_symlink_ads7924.pdf/fig_017.jpeg
+  answer_type: numerical
+  question: |
+    Across all six frames in Figure 33, how many numbered SCL pulse positions
+    show the ADS7924 actively driving SDA?
+  correct_answer: 27
+
+# ────────────────────────────────────────────────────────────────
+# Pranav — ADS7924 single-register read timing (Figure 31)
+# ────────────────────────────────────────────────────────────────
+- id: q14a_single_read_rw_low_frames
+  author: Pranav
+  category: visual
+  image: q14_source.jpeg
+  topic: waveform
+  source: url_http___www.ti.com_lit_ds_symlink_ads7924.pdf/fig_015.jpeg
+  answer_type: numerical
+  question: |
+    In Figure 31, what is the numerical value of the footnote attached to the
+    first bit transmitted in Frame 2?
+  correct_answer: 2
+
+- id: q14b_single_read_first_ads_data_frame
+  author: Pranav
+  category: visual
+  image: q14_source.jpeg
+  topic: waveform
+  source: url_http___www.ti.com_lit_ds_symlink_ads7924.pdf/fig_015.jpeg
+  answer_type: numerical
+  question: |
+    How many individual bit positions are allocated to the Pointer Address P
+    in Frame 2 of Figure 31?
+  correct_answer: 5
+
+- id: q14c_ads7924_driven_pulses
+  author: Pranav
+  category: visual
+  image: q14_source.jpeg
+  topic: waveform
+  source: url_http___www.ti.com_lit_ds_symlink_ads7924.pdf/fig_015.jpeg
+  answer_type: numerical
+  question: |
+    Across all 36 SCL pulses in Figure 31 (Frames 1–4), how many pulse
+    positions show the ADS7924 actively driving SDA?
+  correct_answer: 11
+
+# ────────────────────────────────────────────────────────────────
+# Pranav — ADS7924 previously addressed register timing (Figure 32)
+# ────────────────────────────────────────────────────────────────
+- id: q15a_preaddressed_ads_data_frame
+  author: Pranav
+  category: visual
+  image: q15_source.jpeg
+  topic: waveform
+  source: url_http___www.ti.com_lit_ds_symlink_ads7924.pdf/fig_016.jpeg
+  answer_type: numerical
+  question: |
+    Which numbered frame in Figure 32 contains the Register Data Byte with
+    bits D7 through D0 originating from the ADS7924?
+  correct_answer: 2
+
+# ────────────────────────────────────────────────────────────────
+# Pranav — ULPI PHY block diagram (Figure 5)
+# ────────────────────────────────────────────────────────────────
+- id: q16a_spkr_mic_connections
+  author: Pranav
+  category: visual
+  image: q16_source.jpeg
+  topic: block_diagram
+  source: url_https___www.sparkfun.com_datasheets_Components_SMD_ULPI_v1_1.pdf/fig_005.jpeg
+  answer_type: multiple_choice
+  question: |
+    Trace the lines connected to the external SPKR_MIC pin on the right side.
+    Within the Car Kit Option block, which internal signals does this pin interface with?
+  options:
+    - key: A
+      text: SPKR_L and MIC
+    - key: B
+      text: SPKR_R and MIC
+    - key: C
+      text: Carkit Interrupt Detectors and SPKR_L
+    - key: D
+      text: SPKR_L and SPKR_R
+  correct_answer: B
+
+- id: q16b_power_on_reset_external_pin
+  author: Pranav
+  category: visual
+  image: q16_source.jpeg
+  topic: block_diagram
+  source: url_https___www.sparkfun.com_datasheets_Components_SMD_ULPI_v1_1.pdf/fig_005.jpeg
+  answer_type: multiple_choice
+  question: |
+    Which external pin on the right side of the diagram is directly connected
+    to the Power-On-Reset block?
+  options:
+    - key: A
+      text: Reset
+    - key: B
+      text: RBIAS
+    - key: C
+      text: C-
+    - key: D
+      text: No external pin is shown connecting to this block.
+  correct_answer: D
+
+- id: q16c_ulpi_data_bus_widths
+  author: Pranav
+  category: visual
+  image: q16_source.jpeg
+  topic: block_diagram
+  source: url_https___www.sparkfun.com_datasheets_Components_SMD_ULPI_v1_1.pdf/fig_005.jpeg
+  answer_type: multiple_choice
+  question: |
+    How does the diagram label the possible bit-widths of the ULPI Interface data bus?
+  options:
+    - key: A
+      text: data(7:0)
+    - key: B
+      text: data(7:0) or data(3:0)
+    - key: C
+      text: DataIn(7:0) and DataOut(7:0)
+    - key: D
+      text: data(15:0)
+  correct_answer: B
+
+- id: q16d_txbitstuffix_enable_direct_route
+  author: Pranav
+  category: visual
+  image: q16_source.jpeg
+  topic: block_diagram
+  source: url_https___www.sparkfun.com_datasheets_Components_SMD_ULPI_v1_1.pdf/fig_005.jpeg
+  answer_type: yes_no
+  question: |
+    Does TxBitstuffEnable route directly from the Register Map into the UTMI+
+    Level 3 PHY core?
+  correct_answer: N
+
+- id: q16e_drvvbus_to_avalid_outputs
+  author: Pranav
+  category: visual
+  image: q16_source.jpeg
+  topic: block_diagram
+  source: url_https___www.sparkfun.com_datasheets_Components_SMD_ULPI_v1_1.pdf/fig_005.jpeg
+  answer_type: yes_no
+  question: |
+    Looking at the five consecutive signals from DrvVbus through AValid,
+    inclusive, does a majority function as outputs from the UTMI+ Level 3 PHY
+    core?
+  correct_answer: N
+
+- id: q16f_digital_logic_external_connection
+  author: Pranav
+  category: visual
+  image: q16_source.jpeg
+  topic: block_diagram
+  source: url_https___www.sparkfun.com_datasheets_Components_SMD_ULPI_v1_1.pdf/fig_005.jpeg
+  answer_type: yes_no
+  question: |
+    Does the internal Digital Logic box have any direct line connections to the
+    external pins on the right edge of the diagram?
+  correct_answer: N
+
+- id: q16g_dataout_left_arrows
+  author: Pranav
+  category: visual
+  image: q16_source.jpeg
+  topic: block_diagram
+  source: url_https___www.sparkfun.com_datasheets_Components_SMD_ULPI_v1_1.pdf/fig_005.jpeg
+  answer_type: yes_no
+  question: |
+    From DataOut(7:0) down through RXError, do exactly five signal arrows
+    point left from the UTMI+ Level 3 PHY core?
+  correct_answer: Y
+
+- id: q16h_spkr_l_unsplit_path
+  author: Pranav
+  category: visual
+  image: q16_source.jpeg
+  topic: block_diagram
+  source: url_https___www.sparkfun.com_datasheets_Components_SMD_ULPI_v1_1.pdf/fig_005.jpeg
+  answer_type: yes_no
+  question: |
+    Does SPKR_L pass entirely through the Car Kit Option block to the external
+    pin without splitting or intersecting another internal signal?
+  correct_answer: Y
+
+# ────────────────────────────────────────────────────────────────
+# Pranav — iCE40LP/HX programmable input/output (PIO)
+# ────────────────────────────────────────────────────────────────
+- id: q17a_pio_output_disabled_state
+  author: Pranav
+  category: visual
+  image: q17_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_011.jpeg
+  answer_type: multiple_choice
+  question: |
+    In the Programmable I/O cell, what is the resulting state of the output
+    buffer if the enable block evaluates to logic 0?
+  options:
+    - key: A
+      text: Logic Low (0 V)
+    - key: B
+      text: Output enabled
+    - key: C
+      text: Hi-Z
+    - key: D
+      text: Pull-up enabled
+  correct_answer: C
+
+- id: q17b_output_enable_hiz
+  author: Pranav
+  category: visual
+  image: q17_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_011.jpeg
+  answer_type: multiple_choice
+  question: |
+    In the Programmable I/O cell, what value of OE forces the output to the
+    Hi-Z state?
+  options:
+    - key: A
+      text: OE = 1
+    - key: B
+      text: OE = 0
+    - key: C
+      text: OE is held by HD
+    - key: D
+      text: OE is controlled by INCLK
+  correct_answer: B
+
+- id: q17c_pio_hold_control_pin
+  author: Pranav
+  category: visual
+  image: q17_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_011.jpeg
+  answer_type: multiple_choice
+  question: |
+    Which signal controls the latch that freezes the input state for the lowest
+    power consumption?
+  options:
+    - key: A
+      text: INCLK
+    - key: B
+      text: HD
+    - key: C
+      text: OE
+    - key: D
+      text: OUTCLK
+  correct_answer: B
+
+- id: q17d_distinct_io_bank_label
+  author: Pranav
+  category: visual
+  image: q17_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_011.jpeg
+  answer_type: multiple_choice
+  question: |
+    Which I/O Bank is uniquely labelled with a different I/O capability than
+    the other banks in the device top-view diagram?
+  options:
+    - key: A
+      text: I/O Bank 0
+    - key: B
+      text: I/O Bank 1
+    - key: C
+      text: I/O Bank 2
+    - key: D
+      text: I/O Bank 3
+  correct_answer: D
+
+- id: q17e_pio_register_count
+  author: Pranav
+  category: visual
+  image: q17_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_011.jpeg
+  answer_type: numerical
+  question: |
+    How many flip-flop/register blocks, shown as rectangles with a small
+    internal clock triangle, are explicitly drawn in the PIO circuit?
+  correct_answer: 3
+
+- id: q17f_voltage_supply_label_count
+  author: Pranav
+  category: visual
+  image: q17_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_011.jpeg
+  answer_type: numerical
+  question: |
+    How many voltage-supply labels, such as VCCIO_X, VCC_SPI, and VCC, point to
+    the perimeter banks and core in the device top-view diagram?
+  correct_answer: 5
+
+- id: q17g_pio_unique_clock_names
+  author: Pranav
+  category: visual
+  image: q17_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_011.jpeg
+  answer_type: numerical
+  question: |
+    Across the registers inside the PIO block, how many unique clock signal
+    names are printed next to their clock inputs?
+  correct_answer: 2
+
+- id: q17h_outclk_halted_oe_update
+  author: Pranav
+  category: reasoning
+  image: q17_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_011.jpeg
+  answer_type: yes_no
+  question: |
+    If OUTCLK is completely halted, can new configuration states still be
+    clocked into the Output Enable (OE) register?
+  correct_answer: N
+
+- id: q17i_spi_bank_vccio2_rail
+  author: Pranav
+  category: visual
+  image: q17_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_011.jpeg
+  answer_type: yes_no
+  question: |
+    Are the pins in the SPI Bank powered by the same VCCIO_2 rail as the
+    adjacent General-Purpose I/O Bank 2?
+  correct_answer: N
+
+# ────────────────────────────────────────────────────────────────
+# Pranav — EPC Gen2 tag state diagram
+# ────────────────────────────────────────────────────────────────
+- id: q18a_req_rn_open_or_secured
+  author: Pranav
+  category: visual
+  image: q18_source.jpeg
+  topic: fsm
+  source: url_http___www.gs1.org_sites_default_files_docs_epc_Gen2_Protocol_Standard.pdf/fig_092.jpeg
+  answer_type: multiple_choice
+  question: |
+    If a tag is in the Acknowledged state and receives Req_RN [correct RN16],
+    what condition determines whether it transitions to Open or Secured?
+  options:
+    - key: A
+      text: Whether the command includes a valid handle
+    - key: B
+      text: Whether the access password is equal to zero or not equal to zero
+    - key: C
+      text: Whether the Kill command is explicitly allowed
+    - key: D
+      text: Whether the transition occurs within time T2
+  correct_answer: B
+
+- id: q18b_secured_to_ready_command
+  author: Pranav
+  category: visual
+  image: q18_source.jpeg
+  topic: fsm
+  source: url_http___www.gs1.org_sites_default_files_docs_epc_Gen2_Protocol_Standard.pdf/fig_092.jpeg
+  answer_type: multiple_choice
+  question: |
+    According to the leftmost command box, which command received in the
+    Secured state causes the tag to return to Ready?
+  options:
+    - key: A
+      text: QueryRep
+    - key: B
+      text: All other
+    - key: C
+      text: Select or Challenge
+    - key: D
+      text: Authenticate
+  correct_answer: C
+
+- id: q18c_open_self_loop_event
+  author: Pranav
+  category: visual
+  image: q18_source.jpeg
+  topic: fsm
+  source: url_http___www.gs1.org_sites_default_files_docs_epc_Gen2_Protocol_Standard.pdf/fig_092.jpeg
+  answer_type: multiple_choice
+  question: |
+    Which event is shown as a self-loop in the Open state but is absent from
+    the Secured-state self-loop list?
+  options:
+    - key: A
+      text: KeyUpdate
+    - key: B
+      text: security timeout
+    - key: C
+      text: TagPrivilege
+    - key: D
+      text: AuthComm
+  correct_answer: B
+
+- id: q18d_reply_queryadjust_slot_zero
+  author: Pranav
+  category: visual
+  image: q18_source.jpeg
+  topic: fsm
+  source: url_http___www.gs1.org_sites_default_files_docs_epc_Gen2_Protocol_Standard.pdf/fig_092.jpeg
+  answer_type: multiple_choice
+  question: |
+    In the Reply state, what condition on QueryAdjust or QueryRep causes the
+    tag to generate a new RN16 on a self-loop?
+  options:
+    - key: A
+      text: slot is not equal to 0
+    - key: B
+      text: Note 4 applies
+    - key: C
+      text: the RN16 is correct
+    - key: D
+      text: slot is equal to 0
+  correct_answer: D
+
+- id: q18e_open_kill_disallowed
+  author: Pranav
+  category: visual
+  image: q18_source.jpeg
+  topic: fsm
+  source: url_http___www.gs1.org_sites_default_files_docs_epc_Gen2_Protocol_Standard.pdf/fig_092.jpeg
+  answer_type: multiple_choice
+  question: |
+    A tag is in the Open state and receives Kill [kill disallowed]. What is its
+    explicit reply and subsequent state transition?
+  options:
+    - key: A
+      text: Error code; transitions to Arbitrate.
+    - key: B
+      text: None; transitions to Ready.
+    - key: C
+      text: Error code; remains in Open.
+    - key: D
+      text: None; remains in Open.
+  correct_answer: C
+
+- id: q18f_faulty_authenticate_regression
+  author: Pranav
+  category: visual
+  image: q18_source.jpeg
+  topic: fsm
+  source: url_http___www.gs1.org_sites_default_files_docs_epc_Gen2_Protocol_Standard.pdf/fig_092.jpeg
+  answer_type: yes_no
+  question: |
+    Does a faulty Authenticate command cause the shown transition from Secured
+    back to Open?
+  correct_answer: Y
+
+- id: q18g_acknowledged_to_secured_password
+  author: Pranav
+  category: visual
+  image: q18_source.jpeg
+  topic: fsm
+  source: url_http___www.gs1.org_sites_default_files_docs_epc_Gen2_Protocol_Standard.pdf/fig_092.jpeg
+  answer_type: yes_no
+  question: |
+    Is a non-zero access password required for a tag in Acknowledged to enter
+    Secured after Req_RN with a correct RN16?
+  correct_answer: N
+
+- id: q18h_open_queryrep_to_ready
+  author: Pranav
+  category: visual
+  image: q18_source.jpeg
+  topic: fsm
+  source: url_http___www.gs1.org_sites_default_files_docs_epc_Gen2_Protocol_Standard.pdf/fig_092.jpeg
+  answer_type: yes_no
+  question: |
+    According to the leftmost action box, does a tag in the Open state return
+    to Ready when it receives QueryRep?
+  correct_answer: Y
+
+- id: q18i_acknowledged_authcomm_self_loop
+  author: Pranav
+  category: visual
+  image: q18_source.jpeg
+  topic: fsm
+  source: url_http___www.gs1.org_sites_default_files_docs_epc_Gen2_Protocol_Standard.pdf/fig_092.jpeg
+  answer_type: yes_no
+  question: |
+    Is AuthComm listed as a valid command that triggers a self-loop in the
+    Acknowledged state?
+  correct_answer: N
+
+- id: q18j_arbitrate_queryadjust_slot_nonzero
+  author: Pranav
+  category: visual
+  image: q18_source.jpeg
+  topic: fsm
+  source: url_http___www.gs1.org_sites_default_files_docs_epc_Gen2_Protocol_Standard.pdf/fig_092.jpeg
+  answer_type: yes_no
+  question: |
+    In the Arbitrate state, does QueryAdjust or QueryRep with a non-zero slot
+    advance the tag to Reply?
+  correct_answer: N
+
+# ────────────────────────────────────────────────────────────────
+# From "How many slices, io blocks, switch boxes and routing channels are
+# present here?" — decomposed into 4 single-integer questions.
+# Figure 1.3 of arxiv:1805.03648  (repo: lastweek/fpga_readings)
+# ────────────────────────────────────────────────────────────────
+- id: q1a_slices
+  author: Sriram
+  category: visual
+  image: q1_source.jpeg
+  topic: fpga_arch
+  source: arxiv_1805.03648/fig_022.jpeg
+  answer_type: numerical
+  question: |
+    The image shows a standard FPGA fabric layout with four types of components
+    labeled in the legend: Slice, I/O Block, Switch Box, and Routing Channel.
+    How many Slices are present in the diagram?
+  correct_answer: 16
+
+- id: q1b_io_blocks
+  author: Sriram
+  category: visual
+  image: q1_source.jpeg
+  topic: fpga_arch
+  source: arxiv_1805.03648/fig_022.jpeg
+  answer_type: numerical
+  question: |
+    The image shows a standard FPGA fabric layout with four types of components
+    labeled in the legend: Slice, I/O Block, Switch Box, and Routing Channel.
+    How many I/O Blocks are present in the diagram?
+  correct_answer: 12
+
+- id: q1c_switch_boxes
+  author: Sriram
+  category: visual
+  image: q1_source.jpeg
+  topic: fpga_arch
+  source: arxiv_1805.03648/fig_022.jpeg
+  answer_type: numerical
+  question: |
+    The image shows a standard FPGA fabric layout with four types of components
+    labeled in the legend: Slice, I/O Block, Switch Box, and Routing Channel.
+    How many Switch Boxes are present in the diagram?
+  correct_answer: 9
+
+- id: q1d_routing_channels
+  author: Sriram
+  category: visual
+  image: q1_source.jpeg
+  topic: fpga_arch
+  source: arxiv_1805.03648/fig_022.jpeg
+  answer_type: numerical
+  question: |
+    The image shows a standard FPGA fabric layout with four types of components
+    labeled in the legend: Slice, I/O Block, Switch Box, and Routing Channel.
+    A single Routing Channel spans an entire row or column between slice rows/columns
+    (do not count individual wire segments).
+    How many Routing Channels are present in the diagram?
+  correct_answer: 6
+
+# ────────────────────────────────────────────────────────────────
+# From "How many edges are going into the Reset node, and how many are going
+# out of it?" — decomposed into 2 questions. Self-loop explicitly excluded to
+# eliminate ambiguity.
+# usenix.org/system/files/sec19-nunes.pdf fig 9
+# ────────────────────────────────────────────────────────────────
+- id: q2a_reset_in_edges
+  author: Sriram
+  category: visual
+  image: q2_source.jpeg
+  topic: fsm
+  source: url_https___www.usenix.org_system_files_sec19-nunes.pdf/fig_002.jpeg
+  answer_type: numerical
+  question: |
+    The image is a finite-state-machine diagram. Focus on the state labeled "Reset".
+    Ignore any self-loop on the Reset state (an edge whose source and destination
+    are both Reset).
+    How many directed edges enter the Reset state (i.e. arrows pointing INTO Reset)
+    from other states?
+  correct_answer: 4
+
+- id: q2b_reset_out_edges
+  author: Sriram
+  category: visual
+  image: q2_source.jpeg
+  topic: fsm
+  source: url_https___www.usenix.org_system_files_sec19-nunes.pdf/fig_002.jpeg
+  answer_type: numerical
+  question: |
+    The image is a finite-state-machine diagram. Focus on the state labeled "Reset".
+    Ignore any self-loop on the Reset state (an edge whose source and destination
+    are both Reset).
+    How many directed edges leave the Reset state (i.e. arrows pointing FROM Reset
+    to some other state)?
+  correct_answer: 1
+
+# ────────────────────────────────────────────────────────────────
+# From "How many times does the nxt signal go from 0 to 1?"
+# Timing-diagram question — 1 numerical answer.
+# ────────────────────────────────────────────────────────────────
+- id: q3a_nxt_rising_edges
+  author: Sriram
+  category: visual
+  image: q3_source.jpeg
+  topic: waveform
+  source: url_https___www.sparkfun.com_datasheets_Components_SMD_ULPI_v1_1.pdf/fig_003.jpeg
+  answer_type: numerical
+  question: |
+    The image is a digital-logic timing diagram with multiple signal traces.
+    Focus on the signal labeled "nxt".
+    How many times does the "nxt" signal transition from 0 (low) to 1 (high)
+    within the time window shown in the diagram?
+  correct_answer: 2
+
+# ────────────────────────────────────────────────────────────────
+# Set 5 — Cache subsystem block diagram (Y/N).
+# arxiv_2410.08476 fig 8
+# ────────────────────────────────────────────────────────────────
+- id: q5a_cache_buffer_modify_response
+  author: Sriram
+  category: visual
+  image: q5_source.jpeg
+  topic: block_diagram
+  source: arxiv_2410.08476/fig_008.jpeg
+  answer_type: yes_no
+  question: |
+    The image is a block diagram of a memory subsystem that includes a
+    "cache buffer" block and a "cache read" module. Does the cache buffer
+    reply to the cache read module's modify request with a response?
+  correct_answer: N
+
+- id: q5b_cache_buffer_read_response
+  author: Sriram
+  category: visual
+  image: q5_source.jpeg
+  topic: block_diagram
+  source: arxiv_2410.08476/fig_008.jpeg
+  answer_type: yes_no
+  question: |
+    The image is a block diagram of a memory subsystem that includes a
+    "cache buffer" block and a "cache read" module. Does the cache buffer
+    reply to the cache read module's read request with a response?
+  correct_answer: Y
+
+# ────────────────────────────────────────────────────────────────
+# Set 6 — Phenom. Izhikevich neuromorphic SoC (multiple sub-questions).
+# arxiv_1804.07858 fig 7
+# ────────────────────────────────────────────────────────────────
+- id: q6a_izhikevich_neighbors
+  author: Sriram
+  category: visual
+  image: q6_source.jpeg
+  topic: block_diagram
+  source: arxiv_1804.07858/fig_007.jpeg
+  answer_type: numerical
+  question: |
+    The image is a block diagram of a neuromorphic SoC that contains a
+    block labeled "Phenom. Izhikevich update logic".
+    Excluding any multiplexers, how many distinct blocks does the
+    "Phenom. Izhikevich update logic" block directly interface with in
+    this diagram?
+  correct_answer: 5
+
+- id: q6b_aer_input_address_width
+  author: Sriram
+  category: visual
+  image: q6_source.jpeg
+  topic: block_diagram
+  source: arxiv_1804.07858/fig_007.jpeg
+  answer_type: numerical
+  question: |
+    The image is a block diagram of a neuromorphic SoC. Focus on the
+    "AER INPUT" module. What is the width, in bits, of the address field
+    that is delivered to the "AER INPUT" module?
+  correct_answer: 17
+
+- id: q6c_sdsp_updown_feeders
+  author: Sriram
+  category: visual
+  image: q6_source.jpeg
+  topic: block_diagram
+  source: arxiv_1804.07858/fig_007.jpeg
+  answer_type: multiple_choice_multi
+  question: |
+    The image is a block diagram of a neuromorphic SoC that contains a
+    set of registers labeled "SDSP up/down registers".
+    Which of the following blocks can feed their output into the
+    "SDSP up/down registers"?
+  options:
+    - {key: A, text: LIF update logic}
+    - {key: B, text: Event scheduler}
+    - {key: C, text: 256-neuron memory}
+    - {key: D, text: Phenom. Izhikevich update logic}
+  correct_answer: [A, D]
+
+- id: q6d_izh_lif_mux_select
+  author: Sriram
+  category: visual
+  image: q6_source.jpeg
+  topic: block_diagram
+  source: arxiv_1804.07858/fig_007.jpeg
+  answer_type: multiple_choice
+  question: |
+    The image is a block diagram of a neuromorphic SoC. It contains a
+    multiplexer that chooses between the Izhikevich update result and
+    the LIF update result. Which block drives the select input of that
+    multiplexer?
+  options:
+    - {key: A, text: Controller and global parameters bank}
+    - {key: B, text: 256-neuron memory}
+    - {key: C, text: 256²-synapse memory}
+    - {key: D, text: Event scheduler}
+  correct_answer: B
+
+- id: q6e_synapse_updaters
+  author: Sriram
+  category: visual
+  image: q6_source.jpeg
+  topic: block_diagram
+  source: arxiv_1804.07858/fig_007.jpeg
+  answer_type: multiple_choice_multi
+  question: |
+    The image is a block diagram of a neuromorphic SoC that contains a
+    "256²-synapse memory". Which of the following blocks can write into
+    (i.e. update) the synapse memory?
+  options:
+    - {key: A, text: SDSP update logic}
+    - {key: B, text: Controller and global parameters bank}
+    - {key: C, text: SDSP up/down registers}
+    - {key: D, text: Phenom. Izhikevich update logic}
+    - {key: E, text: AER INPUT}
+  correct_answer: [A, B]
+
+- id: q6f_external_inputs
+  author: Sriram
+  category: visual
+  image: q6_source.jpeg
+  topic: block_diagram
+  source: arxiv_1804.07858/fig_007.jpeg
+  answer_type: multiple_choice_multi
+  question: |
+    The image is a block diagram of a neuromorphic SoC. Which of the
+    following are external input ports to the overall design (i.e. signals
+    that enter the chip from the outside)?
+  options:
+    - {key: A, text: SCK}
+    - {key: B, text: MOSI}
+    - {key: C, text: MISO}
+    - {key: D, text: CLK_EXT}
+    - {key: E, text: RST}
+    - {key: F, text: "ADDR (17-bit, AER INPUT side)"}
+    - {key: G, text: "REQ (AER INPUT side)"}
+    - {key: H, text: "ADDR (8-bit, AER OUTPUT side)"}
+    - {key: I, text: EN}
+    - {key: J, text: "ACK (AER OUTPUT side)"}
+    - {key: K, text: "REQ (AER OUTPUT side)"}
+  correct_answer: [A, B, D, E, F, G, J]
+
+- id: q6g_spi_slave_signals
+  author: Sriram
+  category: visual
+  image: q6_source.jpeg
+  topic: block_diagram
+  source: arxiv_1804.07858/fig_007.jpeg
+  answer_type: multiple_choice
+  question: |
+    The image is a block diagram of a neuromorphic SoC that includes an
+    SPI slave. Which of the following most accurately lists the external
+    signals interfacing with the SPI slave?
+  options:
+    - {key: A, text: "SCK, MOSI, MISO"}
+    - {key: B, text: "SCK, MOSI, MISO, CLK_EXT"}
+    - {key: C, text: "SCK, MOSI, MISO, RST"}
+    - {key: D, text: "SCK, MOSI, REQ, ACK"}
+  correct_answer: A
+
+# ────────────────────────────────────────────────────────────────
+# Set 7 — Max-pooling waveform.
+# arxiv_1907.02217 fig 9
+# ────────────────────────────────────────────────────────────────
+- id: q7a_mfifo_rd_en_enables
+  author: Sriram
+  category: visual
+  image: q7_source.jpeg
+  topic: waveform
+  source: arxiv_1907.02217/fig_009.jpeg
+  answer_type: numerical
+  question: |
+    The image is a max-pooling timing waveform with numbered clock cycles
+    along the horizontal axis. Focus on the signal labeled "m_fifo_rd_en".
+    Count only the interval strictly between the clock cycles labeled 6
+    and 18 (inclusive of both endpoints). Within that window, how many
+    times is "m_fifo_rd_en" enabled (i.e. held high across at least one
+    clock cycle)?
+  correct_answer: 3
+
+# ────────────────────────────────────────────────────────────────
+# Set 8 — CoFHEE top-level architecture: memory subsystem.
+# arxiv_2204.08742 fig 1  (fig_001.jpeg · orig _page_2_Diagram_4.jpeg — NB: manifest caption for fig_001 is garbage; captions in this paper are shifted by one)
+# repo: momalab/CoFHEE — taped out, 55nm GlobalFoundries, trust=6.3 (silicon)
+#
+# Deliberately arithmetic-free: every answer is obtained by counting or
+# reading the diagram, never by computing. Capacity questions (e.g. "total
+# KB across all SRAMs") were dropped on purpose — they measure arithmetic
+# reliability, which confounds the visual-understanding signal we want.
+# ────────────────────────────────────────────────────────────────
+
+- id: q8e_memory_port_count
+  author: Anil
+  category: reasoning
+  image: q8_source.jpeg
+  topic: block_diagram
+  source: arxiv_2204.08742/fig_001.jpeg
+  answer_type: numerical
+  question: |
+    The image is a top-level SoC block diagram in which several SRAM blocks
+    are attached to a bus labeled "AHB-LITE".
+    Counting every SRAM block, how many separate memory ports are attached to
+    that bus in total?
+  correct_answer: 10
+
+- id: q8f_dp_sp_bus_ports
+  author: Anil
+  category: reasoning
+  image: q8_source.jpeg
+  topic: block_diagram
+  source: arxiv_2204.08742/fig_001.jpeg
+  answer_type: multiple_choice
+  question: |
+    The image is a top-level SoC block diagram containing several SRAM memory
+    blocks.
+    In this diagram, what property of a memory does its wiring to the bus
+    labeled "AHB-LITE" reveal?
+  options:
+    - {key: A, text: How many storage cells the memory contains}
+    - {key: B, text: Whether the memory has one access port or two}
+    - {key: C, text: Whether the memory carries commands or data}
+    - {key: D, text: Which processor in the design owns the memory}
+  correct_answer: B
+
+# ────────────────────────────────────────────────────────────────
+# Set 8b — fan-in / fan-out pair on UART-S.
+# Same decomposition as q2a/q2b: identical node, only the direction
+# changes. UART-S is the target because the MDMC -> UART-S link is the
+# single unidirectional arrow in the figure, so fan-in != fan-out.
+#   GPCFG  <-> UART-S   (double-headed: counts both ways)
+#   MDMC    -> UART-S   (single-headed: fan-in only)
+# UART-S has no AHB-LITE connection, so the bus never enters the count.
+# ────────────────────────────────────────────────────────────────
+- id: q8g_uart_s_fan_in
+  author: Anil
+  category: visual
+  image: q8_source.jpeg
+  topic: block_diagram
+  source: arxiv_2204.08742/fig_001.jpeg
+  answer_type: numerical
+  question: |
+    The image is a top-level SoC block diagram containing a block labeled
+    "UART-S". Consider only arrows drawn directly between UART-S and another
+    block, not paths through the bus labeled "AHB-LITE"; an arrow with a head at
+    both ends counts in both directions.
+    From how many distinct blocks can data flow INTO UART-S?
+  correct_answer: 2
+
+- id: q8h_mdmc_bus_port_count
+  author: Anil
+  category: visual
+  image: q8_source.jpeg
+  topic: block_diagram
+  source: arxiv_2204.08742/fig_001.jpeg
+  answer_type: numerical
+  question: |
+    The image is a top-level SoC block diagram containing a block labeled "MDMC"
+    and a bus labeled "AHB-LITE". Ignore every connection between MDMC and a block
+    other than that bus.
+    How many separate ports connect MDMC to the AHB-LITE bus?
+  correct_answer: 5
+
+# ────────────────────────────────────────────────────────────────
+# Set 8c — reasoning tier on the CoFHEE top-level architecture.
+# Same image as the questions above. These need the drawing PLUS hardware knowledge:
+# what dual-port memory buys you, what it means for a block to sit behind
+# a controller instead of on the bus, why a data mover needs many bus
+# ports, and what bus-attached (rather than tightly-coupled) memory implies.
+# ────────────────────────────────────────────────────────────────
+- id: q8i_simultaneous_rw_memory_count
+  author: Anil
+  category: reasoning
+  image: q8_source.jpeg
+  topic: block_diagram
+  source: arxiv_2204.08742/fig_001.jpeg
+  answer_type: numerical
+  question: |
+    The image is a top-level SoC block diagram containing several SRAM memory
+    blocks.
+    How many of them can serve a read access and a write access during the same
+    clock cycle?
+  correct_answer: 3
+
+- id: q8j_off_bus_block_count
+  author: Anil
+  category: visual
+  image: q8_source.jpeg
+  topic: block_diagram
+  source: arxiv_2204.08742/fig_001.jpeg
+  answer_type: numerical
+  question: |
+    The image is a top-level SoC block diagram built around a bus labeled
+    "AHB-LITE". Count only top-level blocks, not blocks drawn inside another block.
+    How many of them have no arrow of their own to that bus?
+  correct_answer: 2
+
+- id: q8k_data_mover_identity
+  author: Anil
+  category: reasoning
+  image: q8_source.jpeg
+  topic: block_diagram
+  source: arxiv_2204.08742/fig_001.jpeg
+  answer_type: multiple_choice
+  question: |
+    The image is a top-level SoC block diagram.
+    Which block in this design is wired to sustain the highest concurrent memory
+    traffic?
+  options:
+    - {key: A, text: ARM CORTEX M0}
+    - {key: B, text: DMA}
+    - {key: C, text: MDMC}
+    - {key: D, text: SPI}
+  correct_answer: C
+
+- id: q8l_nested_block_count
+  author: Anil
+  category: visual
+  image: q8_source.jpeg
+  topic: block_diagram
+  source: arxiv_2204.08742/fig_001.jpeg
+  answer_type: numerical
+  question: |
+    The image is a top-level SoC block diagram.
+    How many of its blocks are shown as a sub-module of another block?
+  correct_answer: 1
+
+# ────────────────────────────────────────────────────────────────
+# Set 8d — DMA reachability. KEPT ON PURPOSE DESPITE FAILING VALIDATION.
+#
+# Both questions below were measured blind (prompt sent with NO figure) and
+# with the figure, 4 models x 3 repeats each: qwen3.8-27b reasoning off/high,
+# claude-sonnet-5 thinking off, claude-opus-5 thinking on.
+#
+#   q8m   blind 0/12   with figure 0/12
+#         Every model, INCLUDING Opus 5 looking at the figure, answers Yes.
+#         Our gold answer is No. The models are arguably right: the figure
+#         does contain a path DMA -> AHB-LITE -> MDMC -> PE, and the stem
+#         only forbids the *processor* from participating, not MDMC. So the
+#         gold answer is contested, not merely hard.
+#
+#   q8n   blind 7/12   with figure 4/12, and the models contradict each other:
+#         qwen off  blind 3/3, with figure 0/3  (the figure makes it worse)
+#         opus 5    blind 1/3, with figure 3/3  (the figure makes it better)
+#         sonnet 5  answers Yes in every condition
+#         Adding "directly / valid destination address" closes the MDMC
+#         escape route but the item becomes unstable across models, which
+#         reads as ambiguity rather than difficulty.
+#
+# Neither meets the target profile (blind at or below chance, with-figure
+# high). They are retained for a later pass — the concept is worth testing
+# and the wording may still be fixable. Do NOT report benchmark scores that
+# include them until the gold answers are settled.
+#
+# Also note: answer_type yes_no is NOT supported by scripts/08_run_benchmark.py
+# as committed, so these two join q5a/q5b/q6c/q6e/q6f in blocking any run that
+# loads the whole file. Filter them out or fix the runner first.
+# ────────────────────────────────────────────────────────────────
+- id: q8m_dma_to_pe_reachability
+  author: Anil
+  category: reasoning
+  image: q8_source.jpeg
+  topic: block_diagram
+  source: arxiv_2204.08742/fig_001.jpeg
+  answer_type: yes_no
+  question: |
+    Assume the ARM Cortex M0 has already configured the DMA and is then halted.
+    Based on the shown architecture, can the DMA still move data from a DP SRAM
+    into the PE without the processor participating in each data transfer?
+  correct_answer: Y
+
+- id: q8n_dma_to_pe_direct_addressing
+  author: Anil
+  category: reasoning
+  image: q8_source.jpeg
+  topic: block_diagram
+  source: arxiv_2204.08742/fig_001.jpeg
+  answer_type: yes_no
+  question: |
+    Assume the ARM Cortex M0 has already configured the DMA and is then halted.
+    Based on the shown architecture, can the DMA write directly into the PE —
+    that is, is the PE a valid destination address for a DMA transfer — without
+    the processor participating?
+  correct_answer: N
+
+# ────────────────────────────────────────────────────────────────
+# Set 9 — FABNet adaptable butterfly accelerator, hardware overview.
+# arxiv_2209.09570 fig_008.jpeg (image_id 88abfa7b1c086910, page 5)
+# repo: hmarkc/Butterfly_Acc — MICRO'22, tier_a, no trust signals.
+# Image copied verbatim from the pipeline output (1376x440); no manual crop.
+#
+# The figure is a three-panel, parameterised architecture: sub-panels are
+# captioned "(a) Hardware Overview", "(b) Butterfly Engine", "(c) Attention
+# Engine", and curly braces annotate the parallelism parameters P_BE, P_BU,
+# P_QK, P_SV, P_head. These questions target what a designer actually reads
+# the figure for — parallelism factors, which structures scale together,
+# instance counts across panels, and dataflow between blocks.
+#
+# Still arithmetic-free: no question requires multiplying or summing.
+# ────────────────────────────────────────────────────────────────
+- id: q9a_p_qk_value
+  author: Anil
+  category: visual
+  image: q9_source.jpeg
+  topic: block_diagram
+  source: arxiv_2209.09570/fig_008.jpeg
+  answer_type: numerical
+  question: |
+    The image is a hardware architecture figure made of three sub-panels. In the
+    sub-panel captioned "(c) Attention Engine", a curly brace is annotated with
+    the parameter P_QK.
+    As drawn in this diagram, what value does P_QK take?
+  correct_answer: 4
+
+# q9f targets a containment/termination distinction that is easy to get
+# wrong: the arrow out of BP stops on the border of the box that GROUPS the
+# two buffers, so it lands on neither named block. The question mentions no
+# box and no grouping — any such hint would give the answer away. The two
+# buffer names are offered because the natural reading is to bind an arrow
+# to the nearest labeled block, and "passes directly through" is offered
+# because that is the other way to be wrong. Correct answer is "none of
+# them", which can only be reached by actually looking at the arrowhead.
+- id: q9f_bp_arrow_termination
+  author: Anil
+  category: visual
+  image: q9_source.jpeg
+  topic: block_diagram
+  source: arxiv_2209.09570/fig_008.jpeg
+  answer_type: multiple_choice
+  question: |
+    The image is a hardware architecture figure made of three sub-panels. In the
+    sub-panel captioned "(a) Hardware Overview", one arrow leaves the block
+    labeled "BP" and travels to the right.
+    Which block does that arrow connect to?
+  options:
+    - {key: A, text: The ShortCut Buffer}
+    - {key: B, text: The Query Buffer}
+    - {key: C, text: No connection — the arrow passes directly through to the AP block}
+    - {key: D, text: Neither of those two blocks}
+  correct_answer: D
+
+# ────────────────────────────────────────────────────────────────
+# Set 9b — reasoning tier on the FABNet butterfly accelerator.
+# Same image as the questions above. These need the drawing PLUS hardware knowledge:
+# what a shared parallelism parameter means in RTL, what a single
+# accumulator behind a MAC array implements, what S2P/P2S do at the edge
+# of a parallel datapath, and what the placement of Softmax says about
+# the order of operations.
+# ────────────────────────────────────────────────────────────────
+- id: q9h_interface_writeback_sources
+  author: Anil
+  category: reasoning
+  image: q9_source.jpeg
+  topic: block_diagram
+  source: arxiv_2209.09570/fig_008.jpeg
+  answer_type: numerical
+  question: |
+    The image is a hardware architecture figure made of three sub-panels; in the
+    sub-panel captioned "(a) Hardware Overview", every block other than "Off-chip
+    Memory" belongs to the accelerator itself.
+    How many of those accelerator blocks send data into the block labeled
+    "Interface"?
+  correct_answer: 3
+
+- id: q9j_parallel_lane_count
+  author: Anil
+  category: reasoning
+  image: q9_source.jpeg
+  topic: block_diagram
+  source: arxiv_2209.09570/fig_008.jpeg
+  answer_type: numerical
+  question: |
+    The image is a hardware architecture figure made of three sub-panels. In the
+    sub-panel captioned "(b) Butterfly Engine", blocks labeled "S2P" and "P2S"
+    convert between the engine's single external data path and the parallel
+    lanes that run inside it.
+    How many parallel lanes do they convert to and from?
+  correct_answer: 3
+
+# ────────────────────────────────────────────────────────────────
+# Set 10 — RANC core-controller state machine.
+# arxiv_2011.00624 fig_016.jpeg (page 2) — 538x471, copied verbatim from the
+# pipeline output. repo: edabk-hust/edabk_brain_soc (59 stars, tier_b,
+# trust 5.15 — compliance + silicon).
+#
+# First set to mix the two categories:
+#   category: visual     — q10a..q10e, answerable from the drawing alone
+#   category: reasoning  — q10f..q10j, need the drawing PLUS hardware design
+#                          knowledge (state encoding, idle states, nested
+#                          loops, branch semantics, design rationale)
+#
+# FSM as drawn: 8 states, 12 transitions. Self-loops on STATE 0 (idle, waits
+# for an external tick) and STATE 4 (inner loop over axons). STATE 6 is the
+# only branching state: !csram_done returns to STATE 2 (outer loop over CSRAM
+# rows), otherwise it proceeds to STATE 7 and back to STATE 0.
+# ────────────────────────────────────────────────────────────────
+- id: q10a_state_count
+  author: Anil
+  category: visual
+  image: q10_source.jpeg
+  topic: fsm
+  source: arxiv_2011.00624/fig_016.jpeg
+  answer_type: numerical
+  question: |
+    The image is a finite-state-machine diagram whose states are labeled
+    "STATE n".
+    How many states does the diagram contain?
+  correct_answer: 8
+
+- id: q10c_state6_fan_out
+  author: Anil
+  category: visual
+  image: q10_source.jpeg
+  topic: fsm
+  source: arxiv_2011.00624/fig_016.jpeg
+  answer_type: numerical
+  question: |
+    The image is a finite-state-machine diagram. Focus on the state labeled
+    "STATE 6". Ignore any self-loop on that state.
+    How many transition arrows leave STATE 6 and point to some other state?
+  correct_answer: 2
+
+- id: q10d_state6_fan_in
+  author: Anil
+  category: visual
+  image: q10_source.jpeg
+  topic: fsm
+  source: arxiv_2011.00624/fig_016.jpeg
+  answer_type: numerical
+  question: |
+    The image is a finite-state-machine diagram. Focus on the state labeled
+    "STATE 6". Ignore any self-loop on that state.
+    How many transition arrows arrive at STATE 6 from some other state?
+  correct_answer: 1
+
+- id: q10e_csram_done_target
+  author: Anil
+  category: visual
+  image: q10_source.jpeg
+  topic: fsm
+  source: arxiv_2011.00624/fig_016.jpeg
+  answer_type: multiple_choice
+  question: |
+    The image is a finite-state-machine diagram. One transition arrow is
+    labeled with the condition "!csram_done".
+    Which state does that transition lead to?
+  options:
+    - {key: A, text: STATE 0}
+    - {key: B, text: STATE 1}
+    - {key: C, text: STATE 2}
+    - {key: D, text: STATE 7}
+  correct_answer: C
+
+- id: q10f_one_hot_flip_flops
+  author: Anil
+  category: reasoning
+  image: q10_source.jpeg
+  topic: fsm
+  source: arxiv_2011.00624/fig_016.jpeg
+  answer_type: numerical
+  question: |
+    The image is a finite-state-machine diagram for a hardware controller.
+    Suppose this state machine is implemented in RTL using one-hot state
+    encoding.
+    How many flip-flops would the state register require?
+  correct_answer: 8
+
+- id: q10g_states_without_self_loop
+  author: Anil
+  category: visual
+  image: q10_source.jpeg
+  topic: fsm
+  source: arxiv_2011.00624/fig_016.jpeg
+  answer_type: numerical
+  question: |
+    The image is a finite-state-machine diagram. A self-loop is a transition
+    whose source state and destination state are the same.
+    How many of its states have no self-loop?
+  correct_answer: 6
+
+- id: q10i_shortest_cycle_state4
+  author: Anil
+  category: visual
+  image: q10_source.jpeg
+  topic: fsm
+  source: arxiv_2011.00624/fig_016.jpeg
+  answer_type: numerical
+  question: |
+    The image is a finite-state-machine diagram. Consider a run of this machine that
+    departs STATE 4 and later returns to STATE 4, ignoring self-loops and counting
+    both the transition that departs STATE 4 and the transition that returns to it.
+    What is the smallest number of transitions such a run can take?
+  correct_answer: 5
+
+- id: q10j_csram_clear_annotation
+  author: Anil
+  category: visual
+  image: q10_source.jpeg
+  topic: fsm
+  source: arxiv_2011.00624/fig_016.jpeg
+  answer_type: numerical
+  question: |
+    The image is a finite-state-machine diagram whose transitions carry text
+    annotations describing what happens on them. One annotation describes clearing
+    the row of CSRAM that was just read.
+    That annotation sits on the transition leaving which numbered state?
+  correct_answer: 7
+
+# ────────────────────────────────────────────────────────────────
+# Set 11 — Winbond W25Q256FV serial flash, top-level block diagram.
+# Source: url_https___www.winbond.com_resource-files_w25q256fv_revg1_120214_qpi_website_rev_g.pdf
+#         fig_009.jpeg (page 10), 1286x1437, copied verbatim from the pipeline.
+# repo: osresearch/spispy (381 stars, tier_a, trust 1.5 — fpga).
+#       An open-source SPI flash emulator: the semantics in this figure are
+#       directly implementable in, and checkable against, that repo's RTL.
+#
+# First datasheet-sourced set (everything before this came from papers).
+# Four properties of the drawing carry the difficulty. The first two were the
+# original basis of the set; both turned out to be solved 2/2 with the figure and
+# now serve only as background, with the items rebuilt on the last two.
+#   1. Ellipsis notation. Only six sector boxes and six block boxes are drawn,
+#      but the numbering runs Sector 0..15 and Block 0..511, so counting drawn
+#      boxes gives 6 and 6 — both wrong. Reading the total off the numbering is
+#      a one-step read, so q11d now asks which block adjoins the TALLEST of the
+#      three ellipses, which needs their heights compared instead.
+#   2. Arrowhead asymmetry. Exactly the four pins carrying an (IOn) annotation
+#      are drawn bidirectional; CLK and /CS are plain inputs. Counting them is
+#      easy, so q11b now counts leftward-pointing heads across the whole figure.
+#   3. Occlusion. The dotted grey lines from Block Segmentation pass BEHIND the
+#      tall "Write Protect Logic and Row Decode" column: they stop at its left
+#      edge with no head and resume on its right edge with a head into the array.
+#      Only three solid heads actually touch that column.
+#   4. A long polyline with a decoy. The arrow into the Status Register's right
+#      edge starts at Column Decode, runs left, turns up and passes the SPI block
+#      with ~32 px of clearance without touching it. Both the textbook prior and
+#      the geometry invite "SPI Command & Control Logic"; the drawing says
+#      otherwise. This is what q11a tests.
+# ────────────────────────────────────────────────────────────────
+- id: q11a_status_register_source
+  author: Anil
+  category: visual
+  image: q11_source.jpeg
+  topic: block_diagram
+  source: url_https___www.winbond.com_resource-files_w25q256fv_revg1_120214_qpi_website_rev_g.pdf/fig_009.jpeg
+  answer_type: multiple_choice
+  question: |
+    The image is the top-level block diagram of a serial flash memory chip. One arrow
+    enters the Status Register block through its right-hand edge.
+    Which block does that arrow come from?
+  options:
+    - {key: A, text: "SPI Command & Control Logic"}
+    - {key: B, text: "High Voltage Generators"}
+    - {key: C, text: "Column Decode And 256-Byte Page Buffer"}
+    - {key: D, text: "Write Protect Logic and Row Decode"}
+  correct_answer: C
+
+- id: q11c_single_headed_internal_arrows
+  author: Anil
+  category: visual
+  image: q11_source.jpeg
+  topic: block_diagram
+  source: url_https___www.winbond.com_resource-files_w25q256fv_revg1_120214_qpi_website_rev_g.pdf/fig_009.jpeg
+  answer_type: numerical
+  question: |
+    The image is the top-level block diagram of a serial flash memory chip whose
+    named internal function blocks are joined to one another by solid arrows, some
+    carrying data both ways and some only one way.
+    Leaving out every connection that touches an external interface signal or the
+    memory array, how many of the connections between two named function blocks
+    carry data in only one direction?
+  correct_answer: 9
+
+- id: q11d_tallest_ellipsis_neighbour
+  author: Anil
+  category: visual
+  image: q11_source.jpeg
+  topic: block_diagram
+  source: url_https___www.winbond.com_resource-files_w25q256fv_revg1_120214_qpi_website_rev_g.pdf/fig_009.jpeg
+  answer_type: multiple_choice
+  question: |
+    The image is the top-level block diagram of a serial flash memory chip. Inside its
+    memory array column, a vertical row of three dots stands in for a stretch of the
+    array that is not drawn out. These stretches are not all drawn to the same height.
+    Which numbered block is drawn directly below the tallest of them?
+  options:
+    - {key: A, text: "Block 0"}
+    - {key: B, text: "Block 127"}
+    - {key: C, text: "Block 255"}
+    - {key: D, text: "Block 256"}
+  correct_answer: D
+
+- id: q11f_spi_logic_arrowheads
+  author: Anil
+  category: visual
+  image: q11_source.jpeg
+  topic: block_diagram
+  source: url_https___www.winbond.com_resource-files_w25q256fv_revg1_120214_qpi_website_rev_g.pdf/fig_009.jpeg
+  answer_type: numerical
+  question: |
+    The image is the top-level block diagram of a serial flash memory chip, and a
+    connection that carries data both ways still counts once.
+    How many separate connections meet the block labeled "SPI Command & Control
+    Logic"?
+  correct_answer: 11
+
+- id: q11g_register_region_count
+  author: Anil
+  category: visual
+  image: q11_source.jpeg
+  topic: block_diagram
+  source: url_https___www.winbond.com_resource-files_w25q256fv_revg1_120214_qpi_website_rev_g.pdf/fig_009.jpeg
+  answer_type: numerical
+  question: |
+    The image is the top-level block diagram of a serial flash memory chip. Apart
+    from the main memory array, some regions are printed with their own
+    hexadecimal address ranges.
+    How many such address ranges are printed outside the main array?
+  correct_answer: 4
+
+# ────────────────────────────────────────────────────────────────
+# Set 19 — Lattice iCE40 LP/HX, programmable I/O register block.
+# Source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_
+#         iCE_iCE40LPHXFamilyDataSheet.pdf, page 11, Figure 2-6 (pipeline fig_002).
+#
+# The drawing is a PIO Pair: two pixel-identical programmable-I/O cells inside one
+# grey panel, so per-cell answers are well defined and figure-wide answers double.
+# Structure verified independently by two design agents and two auditors, all in
+# agreement, and no gold in this set was found wrong on audit:
+#   5 flip-flops per cell   input path 2 - output path 2 - output enable 1
+#   2 of those carry a clock-input inversion bubble, one per data path
+#   5 multiplexers per cell 4-input input mux - three 2-input output muxes -
+#                           4-input output-enable mux
+#   CLOCK_ENABLE gates both OUTPUT_CLK and INPUT_CLK; both gated rails span both
+#   cells, the output rail clocking 3 flip-flops per cell and the input rail 2
+#   the output rail continues past the clock pins into a NOR whose output steers
+#   a multiplexer select, and the input multiplexer is fed back from downstream of
+#   the D_IN_0 buffer, which is the latch LATCH_INPUT_VALUE controls
+#
+# The image is a 600 dpi re-render, 2640x3248. THAT WAS NOT NECESSARY. A control
+# run of q19a, q19b, q19e and q19h against the pipeline extraction (837x1020) gave
+# 3/6, 3/6, 6/6 and 3/6 against 3/6, 3/6, 4/6 and 3/6 here: no gain, and one item
+# was easier at the lower resolution. The likely reason is that the serving stack
+# caps pixels well below 8.6 MP, so both images reach the model at similar
+# effective size. An earlier version of this comment claimed the re-render was what
+# made the clock-bubble items possible; the measurement refutes it, and the claim
+# is recorded here as withdrawn rather than deleted.
+#
+# What did hold up: questions built on the canonical structures above - the mux as
+# a latch, the clock into a DDR select, a 4-input enable mux - leaked 4/6 to 6/6
+# blind. The lesson is narrower than "meaningful facts leak". Blind models know
+# structures; they do not know this vendor's counts and choices. That filter has a
+# cost worth stating: selecting on blind ~= 0 selects against everything a model
+# already knows, which pushes a set toward implementation trivia. Two candidates
+# that came out of that pressure - a count of drawn multiplexer symbols and a count
+# of drawn inversion points - were cut on audit for measuring the draftsman's
+# decomposition rather than the design.
+#
+# Twenty candidates were measured against both Qwen variants, blind and sighted,
+# 3 repeats each; six survive. Every "Measured" line below is the shipped wording,
+# re-run after the audit rewordings - the earlier notes reported pre-revision
+# numbers and were wrong to. Rejections are in benchmark/review/q19_ice40_pio.md.
+#
+# Known weakness, recorded rather than fixed: (q19a - q19b) x 2 numerically equals
+# q19c's gold. The route is unsound - q19b's 2 is one input-path and one output-path
+# register, not the input-rail count - but it arrives at 6, so a solver can be right
+# by accident. q19e was removed for making a sound version of that derivation
+# available.
+# ────────────────────────────────────────────────────────────────
+- id: q19a_flipflops_per_cell
+  author: Anil
+  category: visual
+  image: q19_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_002.jpeg
+  answer_type: numerical
+  question: |
+    The image is the block diagram of a programmable I/O cell pair from an FPGA
+    datasheet, drawn as two identical cells inside one enclosing panel.
+    How many flip-flops does one of those cells contain?
+  correct_answer: 5
+
+- id: q19b_falling_edge_flipflops
+  author: Anil
+  category: visual
+  image: q19_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_002.jpeg
+  answer_type: numerical
+  question: |
+    The image is the block diagram of a programmable I/O cell pair from an FPGA
+    datasheet, drawn as two identical cells inside one enclosing panel.
+    In one cell, how many flip-flops are clocked on the falling edge?
+  correct_answer: 2
+
+- id: q19c_flipflops_stopped_by_output_clock
+  author: Anil
+  category: reasoning
+  image: q19_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_002.jpeg
+  answer_type: numerical
+  question: |
+    The image is the block diagram of a programmable I/O cell pair from an FPGA
+    datasheet, drawn as two identical cells inside one enclosing panel.
+    If OUTPUT_CLK is held at a fixed level while CLOCK_ENABLE stays high and
+    INPUT_CLK keeps toggling, how many flip-flops in the figure stop being clocked?
+  correct_answer: 6
+
+- id: q19f_complement_selectable_at_pad
+  author: Anil
+  category: reasoning
+  image: q19_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_002.jpeg
+  answer_type: multiple_choice
+  question: |
+    The image is the block diagram of a programmable I/O cell pair from an FPGA
+    datasheet, drawn as two identical cells inside one enclosing panel.
+    One value selectable onto a cell's pad is none of the signals the core supplies
+    to that cell; what is it?
+  options:
+    - {key: A, text: "The complement of a value held in one of the cell's output flip-flops"}
+    - {key: B, text: "The value currently present at the pad"}
+    - {key: C, text: "The output of the output-enable flip-flop"}
+    - {key: D, text: "The output clock itself"}
+  correct_answer: A
+
+- id: q19g_inverter_in_enable_path
+  author: Anil
+  category: visual
+  image: q19_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_002.jpeg
+  answer_type: multiple_choice
+  question: |
+    The image is the block diagram of a programmable I/O cell pair from an FPGA
+    datasheet, drawn as two identical cells inside one enclosing panel.
+    What does the drawing place between the multiplexer that selects the pad
+    driver's output-enable and the driver's enable input?
+  options:
+    - {key: A, text: "Nothing"}
+    - {key: B, text: "A flip-flop clocked by the output clock"}
+    - {key: C, text: "An AND gate fed by CLOCK_ENABLE"}
+    - {key: D, text: "An inverter"}
+  correct_answer: D
+
+- id: q19h_gate_before_mux_select
+  author: Anil
+  category: visual
+  image: q19_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_002.jpeg
+  answer_type: multiple_choice
+  question: |
+    The image is the block diagram of a programmable I/O cell pair from an FPGA
+    datasheet, drawn as two identical cells inside one enclosing panel.
+    The gated output clock reaches a multiplexer's select input through one further
+    logic gate; which kind is it?
+  options:
+    - {key: A, text: "AND"}
+    - {key: B, text: "OR"}
+    - {key: C, text: "NOR"}
+    - {key: D, text: "XOR"}
+  correct_answer: C
+
+- id: q19j_pad_receiver_fanout
+  author: Anil
+  category: visual
+  image: q19_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_002.jpeg
+  answer_type: numerical
+  question: |
+    This is the I/O register block diagram from an FPGA datasheet, showing a pair
+    of programmable I/O cells.
+    How many elements does the output of one cell's pad input buffer drive directly?
+  correct_answer: 3
+
+- id: q19k_signals_sent_to_core
+  author: Anil
+  category: visual
+  image: q19_source.jpeg
+  topic: fpga_arch
+  source: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_002.jpeg
+  answer_type: numerical
+  question: |
+    The image is the block diagram of a programmable I/O cell pair from an FPGA
+    datasheet, drawn as two identical cells inside one enclosing panel.
+    How many signals does the pair send toward the core?
+  correct_answer: 4
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Set 20 — RISC-V Platform-Level Interrupt Controller, conceptual block diagram.
+# Source: riscv-privileged-v1.9.pdf p.73, Figure 7.1
+#         (pipeline path url_https___people.eecs.berkeley.edu__krste_papers_
+#          riscv-privileged-v1.9.pdf/fig_024.jpeg)
+# repo:   anishathalye/notary (28 stars, tier_a, trust 4.2 — formal)
+#
+# This is the most widely published figure in the benchmark — it appears in the
+# RISC-V privileged specification — so leakage was the dominant risk and the blind
+# control mattered more here than anywhere else. Three rounds of it:
+#   v1  sighted 95.0%  blind 70.0%   7 of 10 leaked at 6/6 blind and were dropped
+#   v2  sighted 60.0%  blind 23.3%   7 rebuilt
+#   v3  sighted 43.9%  blind 15.2%   11 measured, 7 kept here
+#
+# What went wrong in v1 is worth keeping: the questions tied themselves to the
+# figure by DESCRIBING its structure in words, and the description gave away the
+# answer. The rule that replaced it: the prompt sets up a state and never names
+# the drawing choice that decides the answer.
+#
+# Selecting these seven took one more correction. Judged on the two Qwen variants
+# alone, q20k, q20l, q20x and q20y5 all looked unsolvable — 0/6 or below chance
+# with the figure — and were nearly cut as broken. Run against Sonnet 5 and Opus 5
+# they resolve cleanly, Opus answering three of them 3/3. A question no weak model
+# solves is a ceiling, not a defect; the distinction is whether a stronger model
+# solves it, not whether the wrong answers happen to agree. Nothing here should be
+# cut on weak-model evidence alone.
+#
+# Four candidates were dropped and are recorded in benchmark/review/q20_plic.md:
+# two that a blind Sonnet answers 3/3 (one of them printing its own answer in the
+# prompt), one whose blind score exceeds its sighted score, and one whose gold set
+# no model reproduces.
+# ─────────────────────────────────────────────────────────────────────────────
+- id: q20d_equal_priority_tie_break
+  author: Anil
+  category: reasoning
+  image: q20_source.jpeg
+  topic: block_diagram
+  source: url_https___people.eecs.berkeley.edu__krste_papers_riscv-privileged-v1.9.pdf/fig_024.jpeg
+  answer_type: numerical
+  question: |
+    The image is a conceptual block diagram of an interrupt controller. Assume
+    that for one target both interrupt sources are pending and enabled, that
+    they carry exactly the same nonzero priority, and that this priority is high
+    enough to raise that target's notification.
+    Which interrupt identifier does that target's interrupt-ID output carry?
+  correct_answer: 1
+
+- id: q20k_notification_comparator_depth
+  author: Anil
+  category: reasoning
+  image: q20_source.jpeg
+  topic: block_diagram
+  source: url_https___people.eecs.berkeley.edu__krste_papers_riscv-privileged-v1.9.pdf/fig_024.jpeg
+  answer_type: numerical
+  question: |
+    The image is a conceptual block diagram of an interrupt controller.
+
+    Imagine the logic belonging to one target redrawn in exactly the style used here,
+    but for 8 interrupt sources instead of the number that appears in the image; every
+    other drawing convention is kept the same.
+
+    For that one target, take the longest purely combinational route that ends at its
+    "Interrupt Notification" output. How many of the comparison blocks (the blocks
+    labelled ">?") must a signal pass through, one after another, along that route?
+  correct_answer: 9
+
+- id: q20l_identity_path_delay_skew
+  author: Anil
+  category: reasoning
+  image: q20_source.jpeg
+  topic: block_diagram
+  source: url_https___people.eecs.berkeley.edu__krste_papers_riscv-privileged-v1.9.pdf/fig_024.jpeg
+  answer_type: numerical
+  question: |
+    The image is a conceptual block diagram of an interrupt controller.
+
+    Imagine the logic belonging to one target redrawn in exactly the style used here,
+    but for 8 interrupt sources instead of the number that appears in the image; every
+    other drawing convention is kept the same. Number the sources 1 to 8 in the order
+    they are laid out.
+
+    Consider two situations for that target: in the first, source 1 is the source whose
+    identity ends up in the target's "Max ID" block; in the second, source 8 is. In each
+    situation the identity value reaches "Max ID" after travelling through some number of
+    multiplexers (the trapezoid blocks with the 0 and 1 inputs, not the ">?" blocks).
+
+    How many more multiplexers are there on the longer of these two routes than on the
+    shorter one?
+  correct_answer: 7
+
+- id: q20x_id_line_write_sensitivity
+  author: Anil
+  category: reasoning
+  image: q20_source.jpeg
+  topic: block_diagram
+  source: url_https___people.eecs.berkeley.edu__krste_papers_riscv-privileged-v1.9.pdf/fig_024.jpeg
+  answer_type: numerical
+  question: |
+    The image is a conceptual block diagram of an interrupt controller with two
+    interrupt sources and two interrupt targets. Start from this state: both
+    interrupt sources have pending requests; interrupt 1's priority register holds
+    8 and interrupt 2's holds 3; both sources are enabled for both targets; both
+    threshold registers hold 1.
+    Each of the five register writes below is considered on its own, always
+    starting again from that same state:
+      (i)   write 9 into target 1's threshold register
+      (ii)  clear target 1's enable bit for interrupt 1
+      (iii) write 9 into target 0's threshold register
+      (iv)  write 0 into interrupt 1's priority register
+      (v)   clear target 0's enable bit for interrupt 1
+    How many of these five writes change the value carried on target 1's
+    interrupt-ID output?
+  correct_answer: 2
+
+- id: q20y3_later_source_cannot_reach_earlier_stage
+  author: Anil
+  category: reasoning
+  image: q20_source.jpeg
+  topic: block_diagram
+  source: url_https___people.eecs.berkeley.edu__krste_papers_riscv-privileged-v1.9.pdf/fig_024.jpeg
+  answer_type: yes_no
+  question: |
+    The figure is a conceptual block diagram of an interrupt controller with two request sources and
+    two targets.
+
+    Both sources have an outstanding request and both are enabled for target 0. Source 1's priority
+    register holds 4 and source 2's priority register holds 6. Software now rewrites source 2's
+    priority register to 1 and changes nothing else in the controller.
+
+    Following only the connectivity that the figure draws, does this write change the output of the
+    comparison element (`>?`) that belongs to source 1 inside target 0's region?
+  correct_answer: N
+
+- id: q20y5_enable_gate_carries_priority_value
+  author: Anil
+  category: reasoning
+  image: q20_source.jpeg
+  topic: block_diagram
+  source: url_https___people.eecs.berkeley.edu__krste_papers_riscv-privileged-v1.9.pdf/fig_024.jpeg
+  answer_type: yes_no
+  question: |
+    The figure is a conceptual block diagram of an interrupt controller with two request sources and
+    two targets.
+
+    Both sources have an outstanding request, both are enabled for target 0, and their priority
+    registers hold 3 and 11 respectively. Target 0's threshold register holds 1.
+
+    Inside target 0's dotted region, each source has a gate that combines target 0's enable bit for
+    that source with what arrives from that source, and the wire leaving that gate runs to that
+    source's comparison element. Following the figure, do those two wires carry different values from
+    one another in the state described?
+  correct_answer: Y
+
+- id: q20z5_target_region_structure
+  author: Anil
+  category: reasoning
+  image: q20_source.jpeg
+  topic: block_diagram
+  source: url_https___people.eecs.berkeley.edu__krste_papers_riscv-privileged-v1.9.pdf/fig_024.jpeg
+  answer_type: multiple_choice_multi
+  question: |
+    The image is a conceptual block diagram of an interrupt controller serving more
+    than one interrupt target. Look only at the region that feeds Target 0. Which of
+    the listed statements about the way that region is drawn hold? More than one of
+    them may hold.
+  correct_answer: [A, B, C, D]
+  options:
+    - {key: A, text: "Both lines that accumulate across the sources start from hardwired constants, not from stored values"}
+    - {key: B, text: "A single decision line per source steers both of the multiplexers drawn for that source"}
+    - {key: C, text: "The identifier a source can place on its line is fixed by wiring, not by a register"}
+    - {key: D, text: "The comparison against this target's threshold value appears once, after the last source's stage"}
+    - {key: E, text: "Each decision line passes through a gate that combines it with this target's enable bit"}
+    - {key: F, text: "The reference each comparison is made against is taken straight from the neighbouring source's column"}
+
+- id: q20t_lines_leaving_toward_targets
+  author: Anil
+  category: visual
+  image: q20_source.jpeg
+  topic: block_diagram
+  source: url_https___people.eecs.berkeley.edu__krste_papers_riscv-privileged-v1.9.pdf/fig_024.jpeg
+  answer_type: numerical
+  question: |
+    The image is a conceptual block diagram of an interrupt controller serving two
+    interrupt targets.
+    How many separate signal lines leave the controller toward its targets?
+  correct_answer: 4
+

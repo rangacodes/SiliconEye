@@ -1,0 +1,20 @@
+# Secrets
+.env
+.env.*
+
+# Regenerated locally by scripts/setup_images.py — never commit figure rasters
+benchmark/images/
+benchmark/degraded/
+dataset/images/
+cache/
+
+# Evaluation outputs
+benchmark/runs/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store

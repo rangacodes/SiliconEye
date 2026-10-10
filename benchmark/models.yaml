@@ -1,0 +1,180 @@
+# Model roster for the HDL multimodal benchmark. Add/edit models here — the
+# runner picks up any model listed under `--models <label>` (label is the `id`
+# below). Every field ends up in the request payload verbatim, and is
+# recorded on each result row so runs are fully reproducible.
+#
+# Fields:
+#   id                — short label; used with --models on the CLI and appears
+#                       in the summary output
+#   slug              — OpenRouter model slug (goes into "model" of the API call)
+#   provider          — optional. OpenRouter provider slug to pin.
+#                       When set, allow_fallbacks=false is applied.
+#   temperature       — 0.0 gives near-deterministic outputs. Note that
+#                       Sonnet 5 and Opus 5 reject non-default sampling
+#                       parameters at the native Anthropic API level, but
+#                       OpenRouter silently strips them, so the field is safe
+#                       to leave in.
+#   top_p             — 1.0 = no nucleus sampling
+#   max_tokens        — cap on TOTAL response length, including hidden
+#                       reasoning tokens. For OpenRouter's reasoning.effort,
+#                       the reasoning budget is a fraction of max_tokens
+#                       (high≈0.8, medium≈0.5, low≈0.2), so max_tokens must
+#                       be large enough for the effort ratio to yield a
+#                       meaningful budget PLUS the visible answer.
+#   timeout_s         — per-request read timeout in seconds
+#   seed              — optional; some providers honour it for determinism
+#   reasoning         — optional object; OpenRouter cross-provider surface:
+#                         effort:    "high" | "medium" | "low" | "minimal" |
+#                                    "none"          — depth via ratio-of-
+#                                                     max_tokens
+#                         max_tokens: N (>=1024)     — explicit budget; used
+#                                                     directly on providers
+#                                                     that support a manual
+#                                                     thinking budget (e.g.
+#                                                     Claude Haiku 4.5)
+#                         enabled:   true | false    — false disables thinking
+#                         exclude:   true            — suppress reasoning
+#                                                     content from response
+#   reasoning_effort  — legacy top-level shortcut for reasoning.effort;
+#                       prefer nesting under reasoning instead.
+#   notes             — free-form; ignored by the runner
+
+# ────────────────────────────────────────────────────────────────
+# Qwen3.8 27B — three reasoning-effort variants. OpenRouter maps
+# reasoning.effort to thinking_budget for the akashml provider; max_tokens
+# raised to 4000 so the effort ratios have room to work (pilot_v9 saw two
+# variants hit the length cap on q1c with max_tokens=2000).
+# ────────────────────────────────────────────────────────────────
+
+- id: qwen38_27b_reasoning_high
+  slug: qwen/qwen3.8-27b
+  provider: akashml/fp8
+  temperature: 0.0
+  top_p: 1.0
+  max_tokens: 10000
+  timeout_s: 180
+  reasoning:
+    effort: high
+
+- id: qwen38_27b_reasoning_low
+  slug: qwen/qwen3.8-27b
+  provider: akashml/fp8
+  temperature: 0.0
+  top_p: 1.0
+  max_tokens: 10000
+  timeout_s: 120
+  reasoning:
+    effort: low
+
+- id: qwen38_27b_reasoning_off
+  slug: qwen/qwen3.8-27b
+  provider: akashml/fp8
+  temperature: 0.0
+  top_p: 1.0
+  max_tokens: 10000
+  timeout_s: 60
+  reasoning:
+    enabled: false
+  notes: reasoning disabled — answers land directly in content
+
+# ────────────────────────────────────────────────────────────────
+# Claude models — two variants each: thinking on vs off.
+#
+# Native API surface:
+#   - Sonnet 5 / Opus 5: adaptive thinking is on by default. The
+#     `output_config.effort` knob adjusts depth; the field is not passed
+#     explicitly here because we let each model use its default effort.
+#     `thinking: {type: "disabled"}` turns it off entirely.
+#   - Haiku 4.5: does NOT support adaptive mode. Uses manual extended
+#     thinking with an explicit `budget_tokens`. We pass
+#     `reasoning.max_tokens` for the "on" variant; OpenRouter maps this
+#     to Anthropic's `thinking.budget_tokens`. Off uses the same
+#     `enabled: false` surface.
+#
+# In all cases, OpenRouter's `reasoning: {enabled: true}` activates
+# thinking with provider defaults on adaptive models, and
+# `reasoning: {enabled: false}` translates to `thinking: {type:"disabled"}`.
+# ────────────────────────────────────────────────────────────────
+
+- id: claude_haiku_4_5_thinking_on
+  slug: anthropic/claude-haiku-4.5
+  temperature: 0.0
+  top_p: 1.0
+  max_tokens: 10000
+  timeout_s: 180
+  reasoning:
+    max_tokens: 6000
+
+- id: claude_haiku_4_5_thinking_off
+  slug: anthropic/claude-haiku-4.5
+  temperature: 0.0
+  top_p: 1.0
+  max_tokens: 10000
+  timeout_s: 45
+  reasoning:
+    enabled: false
+
+- id: claude_sonnet_5_thinking_on
+  slug: anthropic/claude-sonnet-5
+  provider: anthropic
+  temperature: 0.0
+  top_p: 1.0
+  max_tokens: 10000
+  timeout_s: 180
+  reasoning:
+    enabled: true
+
+- id: claude_sonnet_5_thinking_off
+  slug: anthropic/claude-sonnet-5
+  provider: anthropic
+  temperature: 0.0
+  top_p: 1.0
+  max_tokens: 10000
+  timeout_s: 45
+  reasoning:
+    enabled: false
+
+- id: claude_opus_5_thinking_on
+  slug: anthropic/claude-opus-5
+  provider: anthropic
+  temperature: 0.0
+  top_p: 1.0
+  max_tokens: 10000
+  timeout_s: 240
+  reasoning:
+    enabled: true
+
+- id: claude_opus_5_thinking_off
+  slug: anthropic/claude-opus-5
+  provider: anthropic
+  temperature: 0.0
+  top_p: 1.0
+  max_tokens: 10000
+  timeout_s: 60
+  reasoning:
+    enabled: false
+
+# ────────────────────────────────────────────────────────────────
+# Inkling Small (Thinking Machines) — open-weights 12B-active MoE
+# with controllable reasoning across text/images. OpenRouter serves it
+# across DeepInfra, Baseten, and Together — no provider pin so the
+# router picks. Pricing (as of Aug 2026): $0.45/$1.20 per M in/out.
+# ────────────────────────────────────────────────────────────────
+
+- id: inkling_small_thinking_on
+  slug: thinkingmachines/inkling-small
+  temperature: 0.0
+  top_p: 1.0
+  max_tokens: 10000
+  timeout_s: 180
+  reasoning:
+    enabled: true
+
+- id: inkling_small_thinking_off
+  slug: thinkingmachines/inkling-small
+  temperature: 0.0
+  top_p: 1.0
+  max_tokens: 10000
+  timeout_s: 60
+  reasoning:
+    enabled: false

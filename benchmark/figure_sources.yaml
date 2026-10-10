@@ -1,0 +1,342 @@
+_about: Where every benchmark image comes from and how scripts/setup_images.py regenerates it. No figure rasters
+  are distributed with this repository (see NOTICE.md). `page` is 0-based. `bbox_pts` is [x0, y0, x1, y1] in PDF
+  points (1/72 in) on that page; the crop is rendered at a zoom that reproduces exactly `width` x `height` pixels.
+  `pdf_sha256` pins the exact document revision the crop coordinates refer to; if the live `url` no longer serves
+  that revision, `archive_url` (or the Wayback Machine) is tried next.
+documents:
+  arxiv:1804.07858:
+    title: 'ODIN: A 0.086-mm² 12.7-pJ/SOP 64k-Synapse 256-Neuron Online-Learning Digital Spiking Neuromorphic Processor'
+    publisher: arXiv (IEEE TBioCAS version © IEEE)
+    license: arXiv non-exclusive-distrib 1.0; © IEEE
+    url: https://arxiv.org/pdf/1804.07858.pdf
+    pdf_sha256: 55ea66b537472256b8d00169cd03b0c2f07454b6ce0935f4efeebcb5eb9766c4
+    pdf_size_bytes: 5668255
+  arxiv:1805.03648:
+    title: Parallel Programming for FPGAs
+    publisher: arXiv
+    license: CC BY 4.0
+    url: https://arxiv.org/pdf/1805.03648.pdf
+    pdf_sha256: c8a20e453e736dd52cebbd75ec2d195b4a9d5ca1f622224b26a91f08b3fb9d00
+    pdf_size_bytes: 8278627
+  arxiv:1907.02217:
+    title: FusionAccel (arXiv 1907.02217)
+    publisher: arXiv
+    license: arXiv non-exclusive-distrib 1.0
+    url: https://arxiv.org/pdf/1907.02217.pdf
+    pdf_sha256: b19fbfd0df632decd3225c2c811c7fbd792214163117adf0f55529072081932d
+    pdf_size_bytes: 2430675
+  arxiv:2002.03568:
+    title: 'RVCoreP: An optimized RISC-V soft processor of five-stage pipelining'
+    publisher: arXiv (IEICE Trans. Inf. & Syst. version © IEICE)
+    license: arXiv non-exclusive-distrib 1.0; © IEICE
+    url: https://arxiv.org/pdf/2002.03568.pdf
+    pdf_sha256: 48c92fa7bd595f2ea7492f6b71371c52a0170810528c7f7abc3a451292bb2ae7
+    pdf_size_bytes: 243939
+  arxiv:2011.00624:
+    title: 'RANC: Reconfigurable Architecture for Neuromorphic Computing'
+    publisher: arXiv
+    license: arXiv non-exclusive-distrib 1.0
+    url: https://arxiv.org/pdf/2011.00624.pdf
+    pdf_sha256: 04e6c816f113d208b2554a6160d74e0608911ceeea699951022bc6a46e7929a7
+    pdf_size_bytes: 5725338
+  arxiv:2204.08742:
+    title: 'CoFHEE: A Co-processor for Fully Homomorphic Encryption Execution'
+    publisher: arXiv
+    license: CC BY-NC-ND 4.0
+    url: https://arxiv.org/pdf/2204.08742.pdf
+    pdf_sha256: 6cdbd4cc6d7e7cd63c7b0a5f4ff19c2ee9b841b2604f4885a07ec4a4fdcec81f
+    pdf_size_bytes: 8177497
+  arxiv:2209.09570:
+    title: Adaptable Butterfly Accelerator for Attention-based NNs via Hardware and Algorithm Co-design (MICRO'22)
+    publisher: arXiv (© IEEE)
+    license: arXiv non-exclusive-distrib 1.0; © IEEE
+    url: https://arxiv.org/pdf/2209.09570.pdf
+    pdf_sha256: cf10a1fe71684b1288c46928355cc496bf478c121a0bd75d883cdde352e85503
+    pdf_size_bytes: 2179429
+  arxiv:2410.08476:
+    title: JingZhao (arXiv 2410.08476)
+    publisher: arXiv
+    license: arXiv non-exclusive-distrib 1.0
+    url: https://arxiv.org/pdf/2410.08476.pdf
+    pdf_sha256: 3f7f5da8531ae796b322e141788571574729c3b25d0f7c651ddb1d5d81884a40
+    pdf_size_bytes: 1040874
+  url:http://www.gs1.org/sites/default/files/docs/epc/Gen2_Protocol_Standard.pdf:
+    title: EPC Radio-Frequency Identity Protocols Generation-2 UHF RFID Standard (v2.0.1)
+    publisher: GS1
+    license: © GS1 EPCglobal; all rights reserved
+    url: http://www.gs1.org/sites/default/files/docs/epc/Gen2_Protocol_Standard.pdf
+    pdf_sha256: 28c1bd3e5904379a49c9789c8f19f055b75342a7097e6ee689a6ff26033b7233
+    pdf_size_bytes: 2350587
+  url:http://www.latticesemi.com/~/media/LatticeSemi/Documents/DataSheets/iCE/iCE40LPHXFamilyDataSheet.pdf:
+    title: iCE40 LP/HX Family Data Sheet
+    publisher: Lattice Semiconductor
+    license: © Lattice Semiconductor; proprietary, see Lattice legal notices
+    url: http://www.latticesemi.com/~/media/LatticeSemi/Documents/DataSheets/iCE/iCE40LPHXFamilyDataSheet.pdf
+    pdf_sha256: 8879b0da267bef143d80da8bb5015c0c3aa2aafdd2f72b0851634994c2e2947c
+    pdf_size_bytes: 3437661
+    archive_url: https://web.archive.org/web/20260616151853id_/https://www.latticesemi.com/~/media/LatticeSemi/Documents/DataSheets/iCE/iCE40LPHXFamilyDataSheet.pdf
+    note: Original URL now returns 404 and the live document has been revised; use the archived copy (SHA-256 verified).
+  url:http://www.ti.com/lit/ds/symlink/ads7924.pdf:
+    title: ADS7924 datasheet (SBAS441)
+    publisher: Texas Instruments
+    license: © Texas Instruments; proprietary, see TI terms of use
+    url: http://www.ti.com/lit/ds/symlink/ads7924.pdf
+    pdf_sha256: f680e98ab6f72d72ea63c14e1031d3b051c70d4f0aef7a4a9738336a35dfbd95
+    pdf_size_bytes: 1482721
+  url:https://people.eecs.berkeley.edu/~krste/papers/riscv-privileged-v1.9.pdf:
+    title: 'The RISC-V Instruction Set Manual, Volume II: Privileged Architecture, v1.9'
+    publisher: UC Berkeley
+    license: © The Regents of the University of California; all rights reserved (v1.9)
+    url: https://people.eecs.berkeley.edu/~krste/papers/riscv-privileged-v1.9.pdf
+    pdf_sha256: 7b471c0d2e75df7c51b27c854a32e6cfc85eb843423749e209450d148469b82e
+    pdf_size_bytes: 514581
+  url:https://www.sparkfun.com/datasheets/Components/SMD/ULPI_v1_1.pdf:
+    title: UTMI+ Low Pin Interface (ULPI) Specification, Revision 1.1
+    publisher: ULPI working group (mirror hosted by SparkFun)
+    license: All rights reserved (ULPI promoters/adopters)
+    url: https://www.sparkfun.com/datasheets/Components/SMD/ULPI_v1_1.pdf
+    pdf_sha256: b329c5a763f11674717a369001cdc0c25226034d86942ce26b561e0db33a2a5f
+    pdf_size_bytes: 2553407
+  url:https://www.usenix.org/system/files/sec19-nunes.pdf:
+    title: 'VRASED: A Verified Hardware/Software Co-Design for Remote Attestation (USENIX Security 2019)'
+    publisher: USENIX (open access; copyright retained by authors)
+    license: open access, no explicit reuse license
+    url: https://www.usenix.org/system/files/sec19-nunes.pdf
+    pdf_sha256: 7f281e9ce8ba8ac232325300ecef137fd128565c33e64dc4f76049d618492325
+    pdf_size_bytes: 2443164
+  url:https://www.winbond.com/resource-files/w25q256fv_revg1_120214_qpi_website_rev_g.pdf:
+    title: W25Q256FV datasheet (Rev G)
+    publisher: Winbond
+    license: © Winbond; proprietary, see Winbond terms
+    url: https://www.winbond.com/resource-files/w25q256fv_revg1_120214_qpi_website_rev_g.pdf
+    pdf_sha256: b5a812619d91cdde9cba525985884c73e34902ab4b6b3b27a56fef4818421af7
+    pdf_size_bytes: 1568589
+images:
+- image: q1_source.jpeg
+  document: arxiv:1805.03648
+  corpus_path: arxiv_1805.03648/fig_022.jpeg
+  page: 15
+  bbox_pts:
+  - 127.935
+  - 65.749
+  - 477.81
+  - 395.749
+  width: 933
+  height: 880
+  bbox_match_score: 0.993
+- image: q2_source.jpeg
+  document: url:https://www.usenix.org/system/files/sec19-nunes.pdf
+  corpus_path: url_https___www.usenix.org_system_files_sec19-nunes.pdf/fig_002.jpeg
+  page: 10
+  bbox_pts:
+  - 53.43
+  - 60.84
+  - 294.18
+  - 228.09
+  width: 642
+  height: 446
+  bbox_match_score: 0.986
+- image: q3_source.jpeg
+  document: url:https://www.sparkfun.com/datasheets/Components/SMD/ULPI_v1_1.pdf
+  corpus_path: url_https___www.sparkfun.com_datasheets_Components_SMD_ULPI_v1_1.pdf/fig_003.jpeg
+  page: 11
+  bbox_pts:
+  - 52.987
+  - 145.943
+  - 538.607
+  - 351.066
+  width: 1295
+  height: 547
+  bbox_match_score: 0.975
+- image: q5_source.jpeg
+  document: arxiv:2410.08476
+  corpus_path: arxiv_2410.08476/fig_008.jpeg
+  page: 6
+  bbox_pts:
+  - 85.02
+  - 359.333
+  - 530.52
+  - 514.208
+  width: 1188
+  height: 413
+  bbox_match_score: 0.948
+- image: q6_source.jpeg
+  document: arxiv:1804.07858
+  corpus_path: arxiv_1804.07858/fig_007.jpeg
+  page: 2
+  bbox_pts:
+  - 37.335
+  - 47.295
+  - 308.835
+  - 252.795
+  width: 724
+  height: 548
+  bbox_match_score: 0.995
+- image: q7_source.jpeg
+  document: arxiv:1907.02217
+  corpus_path: arxiv_1907.02217/fig_009.jpeg
+  page: 17
+  bbox_pts:
+  - 68.842
+  - 68.003
+  - 540.222
+  - 447.132
+  width: 1257
+  height: 1011
+  bbox_match_score: 0.976
+- image: q8_source.jpeg
+  document: arxiv:2204.08742
+  corpus_path: arxiv_2204.08742/fig_001.jpeg
+  page: 2
+  bbox_pts:
+  - 307.826
+  - 43.492
+  - 569.379
+  - 146.893
+  width: 1500
+  height: 593
+  bbox_match_score: 0.979
+- image: q9_source.jpeg
+  document: arxiv:2209.09570
+  corpus_path: arxiv_2209.09570/fig_008.jpeg
+  page: 5
+  bbox_pts:
+  - 45.165
+  - 63.6
+  - 561.165
+  - 228.6
+  width: 1376
+  height: 440
+  bbox_match_score: 0.999
+- image: q10_source.jpeg
+  document: arxiv:2011.00624
+  corpus_path: arxiv_2011.00624/fig_016.jpeg
+  page: 2
+  bbox_pts:
+  - 336.675
+  - 51.304
+  - 538.43
+  - 227.933
+  width: 538
+  height: 471
+  bbox_match_score: 0.999
+- image: q11_source.jpeg
+  document: url:https://www.winbond.com/resource-files/w25q256fv_revg1_120214_qpi_website_rev_g.pdf
+  corpus_path: url_https___www.winbond.com_resource-files_w25q256fv_revg1_120214_qpi_website_rev_g.pdf/fig_009.jpeg
+  page: 10
+  bbox_pts:
+  - 63.69
+  - 106.792
+  - 545.94
+  - 645.667
+  width: 1286
+  height: 1437
+  bbox_match_score: 0.955
+- image: q12_source.jpeg
+  document: arxiv:2002.03568
+  corpus_path: arxiv_2002.03568/fig_001.jpeg
+  page: 1
+  bbox_pts:
+  - 48.548
+  - 73.312
+  - 539.418
+  - 288.935
+  width: 1309
+  height: 575
+  bbox_match_score: 0.97
+- image: q13_source.jpeg
+  document: url:http://www.ti.com/lit/ds/symlink/ads7924.pdf
+  corpus_path: url_http___www.ti.com_lit_ds_symlink_ads7924.pdf/fig_017.jpeg
+  page: 24
+  bbox_pts:
+  - 49.365
+  - 74.093
+  - 557.865
+  - 432.968
+  width: 1356
+  height: 957
+  bbox_match_score: 0.997
+- image: q14_source.jpeg
+  document: url:http://www.ti.com/lit/ds/symlink/ads7924.pdf
+  corpus_path: url_http___www.ti.com_lit_ds_symlink_ads7924.pdf/fig_015.jpeg
+  page: 23
+  bbox_pts:
+  - 51.818
+  - 67.56
+  - 556.948
+  - 354.063
+  width: 1347
+  height: 764
+  bbox_match_score: 0.995
+- image: q15_source.jpeg
+  document: url:http://www.ti.com/lit/ds/symlink/ads7924.pdf
+  corpus_path: url_http___www.ti.com_lit_ds_symlink_ads7924.pdf/fig_016.jpeg
+  page: 23
+  bbox_pts:
+  - 73.35
+  - 71.895
+  - 557.1
+  - 198.645
+  width: 1290
+  height: 338
+  bbox_match_score: 0.886
+- image: q16_source.jpeg
+  document: url:https://www.sparkfun.com/datasheets/Components/SMD/ULPI_v1_1.pdf
+  corpus_path: url_https___www.sparkfun.com_datasheets_Components_SMD_ULPI_v1_1.pdf/fig_005.jpeg
+  page: 14
+  bbox_pts:
+  - 50.197
+  - 131.22
+  - 544.817
+  - 737.963
+  width: 1319
+  height: 1618
+  bbox_match_score: 0.957
+- image: q17_source.jpeg
+  document: url:http://www.latticesemi.com/~/media/LatticeSemi/Documents/DataSheets/iCE/iCE40LPHXFamilyDataSheet.pdf
+  corpus_path: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_011.jpeg
+  page: 9
+  bbox_pts:
+  - 73.08
+  - 195.81
+  - 523.83
+  - 501.06
+  width: 1202
+  height: 814
+  bbox_match_score: 0.997
+- image: q18_source.jpeg
+  document: url:http://www.gs1.org/sites/default/files/docs/epc/Gen2_Protocol_Standard.pdf
+  corpus_path: url_http___www.gs1.org_sites_default_files_docs_epc_Gen2_Protocol_Standard.pdf/fig_092.jpeg
+  page: 55
+  bbox_pts:
+  - 55.17
+  - 56.265
+  - 560.67
+  - 606.015
+  width: 1348
+  height: 1466
+  bbox_match_score: 0.976
+- image: q19_source.jpeg
+  document: url:http://www.latticesemi.com/~/media/LatticeSemi/Documents/DataSheets/iCE/iCE40LPHXFamilyDataSheet.pdf
+  corpus_path: url_http___www.latticesemi.com___media_LatticeSemi_Documents_DataSheets_iCE_iCE40LPHXFamilyDataSheet.pdf/fig_002.jpeg
+  page: 10
+  bbox_pts:
+  - 148.062
+  - 89.384
+  - 464.862
+  - 479.144
+  width: 2640
+  height: 3248
+  bbox_match_score: 0.985
+- image: q20_source.jpeg
+  document: url:https://people.eecs.berkeley.edu/~krste/papers/riscv-privileged-v1.9.pdf
+  corpus_path: url_https___people.eecs.berkeley.edu__krste_papers_riscv-privileged-v1.9.pdf/fig_024.jpeg
+  page: 73
+  bbox_pts:
+  - 54.847
+  - 54.083
+  - 553.217
+  - 415.204
+  width: 1329
+  height: 963
+  bbox_match_score: 0.995
